@@ -5,8 +5,8 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Use GitHub Pages base only for production builds
-  base: process.env.NODE_ENV === 'production' ? '/tanzify-ai/' : '/',
+  // Use root base for Netlify (fixed path)
+  base: '/',
   server: {
     host: true,
     port: 5173,
