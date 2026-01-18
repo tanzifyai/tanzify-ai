@@ -5,9 +5,10 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: '/tanzify-ai/',
+  // Use GitHub Pages base only for production builds
+  base: process.env.NODE_ENV === 'production' ? '/tanzify-ai/' : '/',
   server: {
-    host: "::",
+    host: true,
     port: 5173,
     hmr: {
       overlay: false,
