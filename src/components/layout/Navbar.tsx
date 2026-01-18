@@ -28,8 +28,8 @@ const Navbar = () => {
           <Link to="/" className="flex items-center gap-2 group">
             <div className="relative">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-all duration-300 overflow-hidden">
-                {/* Use the brand SVG logo so favicon and navbar match */}
-                <img src="/favicon.svg" alt="Tanzify AI" className="w-7 h-7" />
+                {/* Use a dedicated brand asset so navbar stays decoupled from favicon */}
+                <img src="/brand.svg" alt="Tanzify AI" className="w-7 h-7" />
               </div>
             </div>
             <span className="font-heading font-bold text-xl">
