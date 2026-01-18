@@ -27,10 +27,10 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-all duration-300">
-                <Zap className="w-5 h-5 text-primary-foreground" />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-all duration-300 overflow-hidden">
+                {/* Use the brand SVG logo so favicon and navbar match */}
+                <img src="/favicon.svg" alt="Tanzify AI" className="w-7 h-7" />
               </div>
-              <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-accent animate-pulse" />
             </div>
             <span className="font-heading font-bold text-xl">
               Tanzify<span className="text-primary">AI</span>
