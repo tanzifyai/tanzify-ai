@@ -1,0 +1,16 @@
+{
+    "name": "Tanzify AI - Instant Audio Transcription",
+    "short_name": "Tanzify AI",
+    "description": "Transform your audio files into accurate text transcripts instantly with AI-powered transcription technology.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#8b5cf6",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}
