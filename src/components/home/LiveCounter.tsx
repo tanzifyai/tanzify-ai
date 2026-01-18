@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE } from "@/lib/config";
 import { Users, Zap } from "lucide-react";
 
 const LiveCounter = () => {
@@ -7,7 +8,8 @@ const LiveCounter = () => {
 
   const fetchLiveStats = async () => {
     try {
-      const response = await fetch('/api/live-stats');
+      const url = `${API_BASE}/api/live-stats`;
+      const response = await fetch(url);
       const data = await response.json();
       setUserCount(data.activeUsers || 0);
       setIsAnimating(true);
