@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Zap, Sparkles, User, LogOut } from "lucide-react";
+import { Menu, X, Zap, Sparkles, User, LogOut, Settings, HelpCircle, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
@@ -13,24 +13,30 @@ const Navbar = () => {
     { name: "Home", path: "/" },
     { name: "Upload", path: "/upload" },
     { name: "Dashboard", path: "/dashboard" },
+    { name: "Profile", path: "/profile" },
+    { name: "Account", path: "/account" },
   ] : [
     { name: "Home", path: "/" },
     { name: "Pricing", path: "/pricing" },
+    { name: "Help", path: "/help" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
+    <div className="fixed top-0 left-0 right-0 z-50">
+      {/* (Firebase removed) */}
+
+      <nav className="bg-background/80 backdrop-blur-xl border-b border-border/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-all duration-300 overflow-hidden">
-                {/* Use a dedicated brand asset so navbar stays decoupled from favicon */}
-                <img src="/brand.svg" alt="Tanzify AI" className="w-7 h-7" />
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-all duration-300 overflow-hidden">
+                <Zap className="w-5 h-5 text-primary-foreground" />
               </div>
+              <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-accent animate-pulse" />
             </div>
             <span className="font-heading font-bold text-xl">
               Tanzify<span className="text-primary">AI</span>
@@ -55,15 +61,26 @@ const Navbar = () => {
                 )}
               </Link>
             ))}
+            {/* Always-visible static links */}
+            <Link to="/help" className="text-muted-foreground hover:text-foreground">Help</Link>
+            <Link to="/terms" className="text-muted-foreground hover:text-foreground">Terms</Link>
+            <Link to="/privacy" className="text-muted-foreground hover:text-foreground">Privacy</Link>
           </div>
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground">
-                  Welcome, {user.name || user.email}
-                </span>
+                <Link to="/profile" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                  <User className="w-4 h-4" />
+                  <span> {user.name || user.email}</span>
+                </Link>
+                <Link to="/settings">
+                  <Button variant="ghost">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </Button>
+                </Link>
                 <Button variant="ghost" onClick={logout}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout
@@ -116,10 +133,24 @@ const Navbar = () => {
                     <p className="text-sm text-muted-foreground mb-2">
                       Welcome, {user.name || user.email}
                     </p>
-                    <Button variant="outline" className="w-full" onClick={() => { logout(); setIsOpen(false); }}>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Link to="/profile" onClick={() => setIsOpen(false)}>
+                        <Button variant="outline" className="w-full">
+                          <User className="w-4 h-4 mr-2" />
+                          Profile
+                        </Button>
+                      </Link>
+                      <Link to="/settings" onClick={() => setIsOpen(false)}>
+                        <Button variant="outline" className="w-full">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Settings
+                        </Button>
+                      </Link>
+                      <Button variant="destructive" className="w-full" onClick={() => { logout(); setIsOpen(false); }}>
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -131,6 +162,17 @@ const Navbar = () => {
                     <Link to="/signup" onClick={() => setIsOpen(false)}>
                       <Button className="w-full">Get Started Free</Button>
                     </Link>
+                    <div className="px-4 mt-4">
+                      <Link to="/help" onClick={() => setIsOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground">
+                        <HelpCircle className="inline w-4 h-4 mr-2" /> Help & FAQ
+                      </Link>
+                      <Link to="/terms" onClick={() => setIsOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground mt-2">
+                        <FileText className="inline w-4 h-4 mr-2" /> Terms
+                      </Link>
+                      <Link to="/privacy" onClick={() => setIsOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground mt-2">
+                        Privacy
+                      </Link>
+                    </div>
                   </>
                 )}
               </div>
@@ -139,6 +181,7 @@ const Navbar = () => {
         )}
       </div>
     </nav>
+    </div>
   );
 };
 

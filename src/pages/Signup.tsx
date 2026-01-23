@@ -27,8 +27,8 @@ const Signup = () => {
       return;
     }
     
-    const success = await signup(name, email, password);
-    if (success) {
+    const result = await signup(name, email, password);
+    if (result.success) {
       // Send welcome email
       try {
         await emailService.sendWelcomeEmail(email, name);
@@ -38,7 +38,7 @@ const Signup = () => {
       }
       navigate("/dashboard");
     } else {
-      setError("Signup failed. Please try again.");
+      setError(result.message || "Signup failed. Please try again.");
     }
   };
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { API_BASE } from "@/lib/config";
+import { supabase } from "@/lib/supabase";
 import { Users, Zap } from "lucide-react";
 
 const LiveCounter = () => {
@@ -8,10 +8,20 @@ const LiveCounter = () => {
 
   const fetchLiveStats = async () => {
     try {
-      const url = `${API_BASE}/api/live-stats`;
-      const response = await fetch(url);
-      const data = await response.json();
-      setUserCount(data.activeUsers || 0);
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+      const { data, error } = await supabase
+        .from('transcriptions')
+        .select('user_id')
+        .gte('created_at', twentyFourHoursAgo);
+
+      if (error) {
+        console.error('Supabase live stats error:', error);
+        return;
+      }
+
+      const activeUsers = new Set((data || []).map((t: any) => t.user_id)).size;
+      setUserCount(activeUsers || 0);
       setIsAnimating(true);
       setTimeout(() => setIsAnimating(false), 500);
     } catch (error) {

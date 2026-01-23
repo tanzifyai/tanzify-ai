@@ -1,25 +1,31 @@
-import { s3Service } from './s3';
-import { emailService } from './email';
-import { db } from '@/lib/supabase';
+import { db, supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface TranscriptionResult {
   text: string;
   language?: string;
   duration?: number;
+  storageKey?: string;
 }
 
 export async function transcribeAudio(file: File, language?: string, userId?: string): Promise<TranscriptionResult> {
   try {
-    // Upload file to S3 first
-    let s3Key = '';
+    // Upload file to Supabase Storage first (if user authenticated)
+    let storageKey = '';
+    let publicUrl = '';
+    const bucket = import.meta.env.VITE_SUPABASE_BUCKET || 'uploads';
     if (userId) {
-      const uploadResult = await s3Service.uploadFile(file, userId);
-      s3Key = uploadResult.key;
+      const fileExtension = file.name.split('.').pop();
+      const path = `${userId}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage.from(bucket).upload(path, file);
+      if (uploadError) {
+        console.error('Supabase storage upload error:', uploadError);
+      } else {
+        storageKey = path;
+        const { data: publicData } = await supabase.storage.from(bucket).getPublicUrl(path);
+        publicUrl = publicData?.publicUrl || '';
+      }
     }
-
-    // Get signed URL for OpenAI API
-    const signedUrl = s3Key ? await s3Service.getSignedUrl(s3Key) : '';
 
     // For now, we'll use the direct file approach since OpenAI API expects direct file upload
     // In production, you might want to use a backend service to handle this securely
@@ -74,6 +80,7 @@ export async function transcribeAudio(file: File, language?: string, userId?: st
       text: data.text,
       language: data.language,
       duration: data.duration,
+      storageKey: storageKey,
     };
   } catch (error) {
     console.error('Transcription error:', error);

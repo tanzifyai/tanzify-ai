@@ -1,0 +1,13 @@
+{
+  "businessHours": {
+    "start": 9,
+    "end": 18,
+    "days": [1,2,3,4,5]
+  },
+  "criticalTables": [
+    "public.payments",
+    "public.subscriptions",
+    "public.webhook_events",
+    "public.webhook_dead_letters"
+  ]
+}

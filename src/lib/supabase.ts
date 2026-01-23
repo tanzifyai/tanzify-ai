@@ -14,7 +14,7 @@ export interface DatabaseUser {
   credits: number;
   minutes_used: number;
   subscription_plan?: string;
-  stripe_customer_id?: string;
+  razorpay_customer_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -24,7 +24,7 @@ export interface DatabaseTranscription {
   user_id: string;
   filename: string;
   original_filename: string;
-  s3_key: string;
+  storage_key: string;
   transcript: string;
   language: string;
   duration: number;
@@ -36,7 +36,7 @@ export interface DatabaseTranscription {
 export interface DatabaseSubscription {
   id: string;
   user_id: string;
-  stripe_subscription_id: string;
+  razorpay_subscription_id?: string;
   plan_name: string;
   status: 'active' | 'canceled' | 'past_due';
   current_period_start: string;
@@ -86,6 +86,23 @@ export const db = {
     const { data, error } = await supabase
       .from('users')
       .update({ minutes_used: minutesUsed, updated_at: new Date().toISOString() })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  async updateUserProfile(
+    userId: string,
+    updates: Partial<Pick<DatabaseUser, 'name' | 'email' | 'subscription_plan' | 'razorpay_customer_id' | 'credits' | 'minutes_used'>>,
+  ) {
+    const payload = { ...updates, updated_at: new Date().toISOString() } as any;
+
+    const { data, error } = await supabase
+      .from('users')
+      .update(payload)
       .eq('id', userId)
       .select()
       .single();
@@ -154,7 +171,7 @@ export const db = {
     const { data, error } = await supabase
       .from('subscriptions')
       .update({ status, updated_at: new Date().toISOString() })
-      .eq('stripe_subscription_id', subscriptionId)
+      .eq('razorpay_subscription_id', subscriptionId)
       .select()
       .single();
 

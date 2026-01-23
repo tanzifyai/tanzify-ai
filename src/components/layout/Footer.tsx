@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
-import { Zap, Sparkles, Twitter, Github, Linkedin, Mail, Shield, Lock, Award } from "lucide-react";
+import { Zap, Sparkles, Twitter, Github, Linkedin, Mail, Shield, Lock, Award, User } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
 
 const Footer = () => {
+  const { user } = useAuth();
   const footerLinks = {
     product: [
       { name: "Features", path: "/#features" },
       { name: "Pricing", path: "/pricing" },
-      { name: "Dashboard", path: "/dashboard" },
       { name: "Upload", path: "/upload" },
     ],
     company: [
@@ -16,8 +17,8 @@ const Footer = () => {
       { name: "Contact", path: "#" },
     ],
     legal: [
-      { name: "Privacy Policy", path: "#" },
-      { name: "Terms of Service", path: "#" },
+      { name: "Privacy Policy", path: "/privacy" },
+      { name: "Terms of Service", path: "/terms" },
       { name: "GDPR", path: "#" },
       { name: "Security", path: "#" },
     ],
@@ -98,6 +99,20 @@ const Footer = () => {
                   </Link>
                 </li>
               ))}
+              {user && (
+                <>
+                  <li>
+                    <Link to="/profile" className="text-background/60 hover:text-primary transition-colors duration-300">
+                      Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/account" className="text-background/60 hover:text-primary transition-colors duration-300">
+                      Account
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 

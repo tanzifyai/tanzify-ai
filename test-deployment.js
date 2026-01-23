@@ -1,12 +1,4 @@
-// test-deployment.js - Comprehensive Testing Script for Tanzify AI
-// Run with: node test-deployment.js
-
-const https = require('https');
-
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://yourdomain.com';
-const BACKEND_URL = process.env.BACKEND_URL || 'https://your-backend.railway.app';
-
-console.log('🚀 Starting Tanzify AI Deployment Tests...\n');
+// REMOVED: test-deployment helper — deleted as part of repo cleanup
 
 // Test 1: Frontend Loading
 function testFrontend() {
@@ -141,6 +133,7 @@ function testFileUpload() {
   console.log('   ✅ Check: File uploads successfully');
   console.log('   ✅ Check: Progress bar works');
   console.log('   ✅ Check: File appears in S3 bucket');
+  console.log('   ✅ Check: File appears in Supabase Storage bucket');
   console.log('   ✅ Check: Transcription starts');
 }
 

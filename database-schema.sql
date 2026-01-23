@@ -13,8 +13,8 @@ CREATE TABLE users (
   credits INTEGER DEFAULT 30,
   minutes_used INTEGER DEFAULT 0,
   subscription_plan TEXT,
-  stripe_customer_id TEXT,
   razorpay_customer_id TEXT,
+  razorpay_subscription_id TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -25,7 +25,7 @@ CREATE TABLE transcriptions (
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   filename TEXT NOT NULL,
   original_filename TEXT NOT NULL,
-  s3_key TEXT NOT NULL,
+  storage_key TEXT NOT NULL,
   transcript TEXT NOT NULL,
   language TEXT DEFAULT 'en',
   duration DECIMAL DEFAULT 0,
@@ -38,8 +38,9 @@ CREATE TABLE transcriptions (
 CREATE TABLE subscriptions (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  stripe_subscription_id TEXT UNIQUE,
   razorpay_subscription_id TEXT UNIQUE,
+  razorpay_order_id TEXT,
+  razorpay_payment_id TEXT,
   plan_name TEXT NOT NULL,
   status TEXT NOT NULL,
   current_period_start TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -54,13 +55,21 @@ ALTER TABLE transcriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Create policies
-CREATE POLICY "Users can view own data" ON users
-  FOR ALL USING (auth.uid()::text = firebase_uid);
+-- Users: allow authenticated users to manage only their own record
+CREATE POLICY "Users can manage own data" ON users
+  FOR ALL
+  USING (auth.uid()::text = firebase_uid)
+  WITH CHECK (auth.uid()::text = firebase_uid);
 
-CREATE POLICY "Users can view own transcriptions" ON transcriptions
-  FOR ALL USING (user_id IN (
-    SELECT id FROM users WHERE firebase_uid = auth.uid()::text
-  ));
+-- Transcriptions: allow authenticated users to manage only their own transcriptions
+CREATE POLICY "Users can manage own transcriptions" ON transcriptions
+  FOR ALL
+  USING (
+    user_id IN (SELECT id FROM users WHERE firebase_uid = auth.uid()::text)
+  )
+  WITH CHECK (
+    user_id IN (SELECT id FROM users WHERE firebase_uid = auth.uid()::text)
+  );
 
 CREATE POLICY "Users can view own subscriptions" ON subscriptions
   FOR ALL USING (user_id IN (

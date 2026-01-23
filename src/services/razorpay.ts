@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import API_BASE from '@/lib/api';
 
 export interface RazorpayPlan {
   id: string;
@@ -43,29 +44,44 @@ export const razorpayService = {
     const plan = RAZORPAY_PLANS.find(p => p.id === planId);
     if (!plan) throw new Error('Plan not found');
 
-    // In a real implementation, this would call your backend API
-    // For now, we'll create a mock order
-    const orderId = `order_${Date.now()}`;
+    // Call server endpoint to create an order (server will use service key)
+    const endpoint = `${API_BASE.replace(/\/$/, '')}/api/subscriptions/create`;
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, plan: planId }),
+      });
 
-    return {
-      id: orderId,
-      amount: plan.amount,
-      currency: 'INR',
-      planId,
-      userId,
-      userEmail,
-    };
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Order creation failed: ${res.status} ${text}`);
+      }
+
+      const json = await res.json();
+      return {
+        id: json.orderId,
+        amount: json.amount || plan.amount,
+        currency: json.currency || 'INR',
+        keyId: json.keyId,
+        planId,
+        userId,
+        userEmail,
+      };
+    } catch (err) {
+      console.error('createOrder error', err);
+      throw err;
+    }
   },
 
   initiatePayment: async (planId: string, userId: string, userEmail: string, userName: string) => {
     const isLoaded = await razorpayService.loadRazorpay();
     if (!isLoaded) throw new Error('Razorpay failed to load');
-
     const order = await razorpayService.createOrder(planId, userId, userEmail);
     const plan = RAZORPAY_PLANS.find(p => p.id === planId);
 
     const options: RazorpayOptions = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      key: (order.keyId as string) || import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: order.amount,
       currency: order.currency,
       name: 'Tanzify AI',
@@ -94,27 +110,36 @@ export const razorpayService = {
 
   handlePaymentSuccess: async (response: RazorpayResponse, planId: string, userId: string) => {
     try {
-      // Update user plan in database
-      const plan = RAZORPAY_PLANS.find(p => p.id === planId);
+      // Let the server verify signature and finalize the subscription
+      const endpoint = `${API_BASE.replace(/\/$/, '')}/api/subscriptions/create`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          plan: planId,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_signature: response.razorpay_signature,
+        }),
+      });
 
-      await supabase
-        .from('users')
-        .update({
-          subscription_plan: planId,
-          minutes_used: 0, // Reset minutes on upgrade
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`Server finalize failed: ${res.status} ${txt}`);
+      }
 
-      // Show success message
-      alert(`Payment successful! Welcome to ${plan?.name} Plan with ${plan?.minutes} minutes.`);
-
-      // Redirect to dashboard
-      window.location.href = '/dashboard';
-
+      const json = await res.json();
+      if (json.success) {
+        const plan = RAZORPAY_PLANS.find(p => p.id === planId);
+        alert(`Payment successful! Welcome to ${plan?.name} Plan.`);
+        window.location.href = '/dashboard';
+      } else {
+        throw new Error(json.message || 'Subscription finalize failed');
+      }
     } catch (error) {
-      console.error('Error updating user plan:', error);
-      alert('Payment successful but failed to update your account. Please contact support.');
+      console.error('Error finalizing subscription:', error);
+      alert('Payment succeeded, but we could not update your account automatically. Please contact support.');
     }
   },
 };

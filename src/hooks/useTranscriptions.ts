@@ -66,15 +66,15 @@ export const useTranscriptions = () => {
     }
   }, [user, loadTranscriptions]);
 
-  const addTranscription = async (transcription: Omit<Transcription, 'id' | 'createdAt'>) => {
+  const addTranscription = async (transcription: Omit<Transcription, 'id' | 'createdAt'> & { storage_key?: string }) => {
     if (!user) return;
 
     try {
       const dbTranscription = {
         user_id: user.id,
-        filename: `${Date.now()}-${Math.random().toString(36).substring(2)}`, // S3 key
+        filename: transcription.filename,
         original_filename: transcription.filename,
-        s3_key: '', // Will be set after upload
+        storage_key: transcription.storage_key || '',
         transcript: transcription.text,
         language: transcription.language,
         duration: transcription.duration,
