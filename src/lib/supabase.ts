@@ -1,7 +1,31 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL ??
+  import.meta.env.NEXT_PUBLIC_SUPABASE_URL ??
+  process.env.SUPABASE_URL ??
+  process.env.VITE_SUPABASE_URL ??
+  process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ??
+  import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  process.env.SUPABASE_ANON_KEY ??
+  process.env.VITE_SUPABASE_ANON_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl) {
+  throw new Error(
+    'Missing Supabase URL: set VITE_SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) for the frontend,\n' +
+        'or SUPABASE_URL for server. In local dev add it to .env and in Vercel/GitHub set the corresponding project environment variable.'
+  );
+}
+
+if (!supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase anon key: set VITE_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) for the frontend,\n' +
+        'or SUPABASE_ANON_KEY for server. In local dev add it to .env and in Vercel/GitHub set the corresponding project environment variable.'
+  );
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

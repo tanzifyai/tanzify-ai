@@ -9,6 +9,7 @@
     "dev:local": "cross-env PORT=3000 vite --host",
     "build": "vite build",
     "build:gh": "vite build --base /tanzify-ai/",
+    "build:prod": "vite build --base /tanzify-ai/",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",

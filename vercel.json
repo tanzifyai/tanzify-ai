@@ -1,4 +1,11 @@
 {
+	"routes": [
+		{ "src": "/tanzify-ai/assets/(.*)", "dest": "/assets/$1" },
+		{ "handle": "filesystem" },
+		{ "src": "/(.*)", "dest": "/index.html" }
+	]
+}
+{
 	"version": 2,
 	"builds": [
 		{
