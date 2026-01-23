@@ -5,8 +5,9 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Base for GitHub Pages
-  base: '/tanzify-ai/',
+  // Base path. Set `VITE_BASE_PATH` when building for GitHub Pages (e.g. '/tanzify-ai/').
+  // Default to '/' which is appropriate for Vercel and most hosts.
+  base: process.env.VITE_BASE_PATH || '/',
   server: {
     host: true,
     port: 5173,
