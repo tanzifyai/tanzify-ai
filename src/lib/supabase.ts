@@ -13,21 +13,38 @@ const supabaseAnonKey =
   process.env.VITE_SUPABASE_ANON_KEY ??
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl) {
-  throw new Error(
-    'Missing Supabase URL: set VITE_SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) for the frontend,\n' +
-        'or SUPABASE_URL for server. In local dev add it to .env and in Vercel/GitHub set the corresponding project environment variable.'
+// Initialize Supabase safely so the app doesn't crash at render time if
+// environment variables are missing or invalid in production.
+let supabase: any = null;
+let _supabaseInitError: Error | null = null;
+if (!supabaseUrl || !supabaseAnonKey) {
+  _supabaseInitError = new Error(
+    'Supabase not configured: missing URL or anon key. Set VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY or NEXT_PUBLIC_* equivalents.'
   );
+  console.error('[supabase] config error:', _supabaseInitError.message);
+} else {
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  } catch (e: any) {
+    _supabaseInitError = e instanceof Error ? e : new Error(String(e));
+    console.error('[supabase] initialization error:', _supabaseInitError.message);
+  }
 }
 
-if (!supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase anon key: set VITE_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) for the frontend,\n' +
-        'or SUPABASE_ANON_KEY for server. In local dev add it to .env and in Vercel/GitHub set the corresponding project environment variable.'
-  );
+// If Supabase failed to initialize, export a friendly stub that throws when used.
+function makeStub(error: Error) {
+  const handler: ProxyHandler<any> = {
+    get(_target, prop) {
+      return () => {
+        throw new Error('Supabase unavailable: ' + error.message);
+      };
+    },
+  };
+  return new Proxy({}, handler);
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabaseInitError = _supabaseInitError;
+export const supabaseClient = supabase ?? makeStub(_supabaseInitError ?? new Error('Supabase not initialized'));
 
 // Database types
 export interface DatabaseUser {
@@ -181,7 +198,7 @@ export const db = {
 
   // Subscription operations
   async createSubscription(subscriptionData: Omit<DatabaseSubscription, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('subscriptions')
       .insert(subscriptionData)
       .select()
