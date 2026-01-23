@@ -1,0 +1,105 @@
+name: CI / Deploy to Vercel
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Install, Test, Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  deploy:
+    name: Deploy to Vercel
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.vercel.outputs.url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@28
+
+      - name: Set production environment variables
+        if: github.ref == 'refs/heads/main'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          # Set environment variables from GitHub Secrets
+          echo "${{ secrets.DATABASE_URL }}" | vercel env add DATABASE_URL production
+          echo "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" | vercel env add SUPABASE_SERVICE_ROLE_KEY production
+          echo "${{ secrets.RAZORPAY_KEY_SECRET }}" | vercel env add RAZORPAY_KEY_SECRET production
+          echo "${{ secrets.RAZORPAY_WEBHOOK_SECRET }}" | vercel env add RAZORPAY_WEBHOOK_SECRET production
+          echo "${{ secrets.VITE_SUPABASE_URL }}" | vercel env add VITE_SUPABASE_URL production
+          echo "${{ secrets.VITE_SUPABASE_ANON_KEY }}" | vercel env add VITE_SUPABASE_ANON_KEY production
+          echo "${{ secrets.VITE_OPENAI_API_KEY }}" | vercel env add VITE_OPENAI_API_KEY production
+          echo "${{ secrets.VITE_RAZORPAY_KEY_ID }}" | vercel env add VITE_RAZORPAY_KEY_ID production
+          echo "${{ secrets.VITE_API_BASE_URL }}" | vercel env add VITE_API_BASE_URL production
+
+      - name: Deploy to Vercel (preview or production)
+        id: vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          # For PRs, deploy preview; for main branch, deploy production
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            vercel --token "$VERCEL_TOKEN" --confirm --prod=false --cwd . | tee vercel-out.txt
+          else
+            vercel --token "$VERCEL_TOKEN" --confirm --prod --cwd . | tee vercel-out.txt
+          fi
+          # extract URL (last line that looks like https://...)
+          url=$(grep -Eo 'https?://[^ ]+' vercel-out.txt | tail -n1)
+          echo "url=$url" >> $GITHUB_OUTPUT
+
+  verify:
+    name: Post-deploy health check
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for deployment to stabilize
+        run: sleep 10
+
+      - name: Health check
+        run: |
+          if [ -z "${{ needs.deploy.outputs.url }}" ]; then
+            echo "No deployment URL found; failing verification"; exit 1
+          fi
+          url="${{ needs.deploy.outputs.url }}"
+          echo "Checking $url"
+          for i in 1 2 3; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "$url") || status=000
+            echo "Attempt $i -> $status"
+            if [ "$status" -ge 200 ] && [ "$status" -lt 400 ]; then
+              echo "Health check passed"; exit 0
+            fi
+            sleep 5
+          done
+          echo "Health check failed"; exit 1

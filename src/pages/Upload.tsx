@@ -174,6 +174,7 @@ const Upload = () => {
           language: result.language || language,
           duration: result.duration || 0,
           status: 'completed',
+          storage_key: (result as any).storageKey || '',
         });
       }
 

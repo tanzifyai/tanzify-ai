@@ -5,7 +5,7 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { razorpayService } from "@/services/razorpay";
-import { Check, Sparkles, Users, Zap, Crown, Loader2 } from "lucide-react";
+import { Check, Sparkles, Users, Zap, Crown, Loader2, GraduationCap, Building2, Headphones } from "lucide-react";
 
 const Pricing = () => {
   const [currency, setCurrency] = useState<"USD" | "INR">("INR");

@@ -12,7 +12,7 @@ import {
 
 const Dashboard = () => {
   const [copied, setCopied] = useState(false);
-  const { user, logout } = useTranscriptions();
+  const { user, logout } = useAuth();
   const { transcriptions } = useTranscriptions();
   const referralCode = user?.email.split('@')[0].toUpperCase() + "123" || "USER123";
 

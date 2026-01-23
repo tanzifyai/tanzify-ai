@@ -1,5 +1,5 @@
 // Centralized API base config for frontend
-// Use VITE_API_BASE for production backend URL. Leave empty for dev to use Vite proxy.
-export const API_BASE: string = import.meta.env.VITE_API_BASE || "";
-
+// Import and re-export `API_BASE` from `api.ts` so default export is defined.
+import API_BASE from './api';
+export { API_BASE };
 export default API_BASE;

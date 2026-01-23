@@ -1,6 +1,4 @@
-<#
-railway-deploy.ps1
-Automates Railway project init, pushing env vars and deploying backend.
+<# REMOVED: railway-deploy helper script — cleaned up repository. #>
 
 Usage (interactive login):
   1. Install Railway CLI: npm i -g @railway/cli

@@ -1,14 +1,19 @@
 # Tanzify AI - Complete Deployment Plan
 # Generated: January 16, 2026
 
+> NOTE: This repository has been simplified. Stripe and AWS S3 references are
+> deprecated across the project. Use Razorpay for payments and Supabase Storage
+> for file uploads. The backend has been removed from the core repo; implement
+> server-side secrets (e.g., Razorpay secret) in a separate private backend.
+
 ## 🚀 DEPLOYMENT TIMELINE (48 Hours)
 
 ### **HOUR 1-4: Account Setup & Configuration**
 - [ ] Create all required accounts (see Account List below)
 - [ ] Configure Firebase project
 - [ ] Set up Supabase database
-- [ ] Configure Stripe & Razorpay accounts
-- [ ] Set up AWS S3 bucket
+  - [ ] Configure Razorpay account (Stripe deprecated)
+- [ ] Set up Supabase Storage bucket (uploads)
 
 ### **HOUR 5-8: Environment & Database Setup**
 - [ ] Update all .env files with real credentials
@@ -29,13 +34,12 @@
 - [ ] Configure SSL certificate
 
 ### **HOUR 17-20: Payment Integration Testing**
-- [ ] Test Stripe payment flow
-- [ ] Test Razorpay payment flow
+  - [ ] Test Razorpay payment flow
 - [ ] Configure webhooks
 - [ ] Test subscription management
 
 ### **HOUR 21-24: File Storage & AI Integration**
-- [ ] Configure AWS S3 permissions
+- [ ] Configure Supabase Storage permissions
 - [ ] Test file upload functionality
 - [ ] Verify OpenAI API integration
 - [ ] Test transcription workflow
@@ -74,11 +78,8 @@
 - **Setup Time**: 20 minutes
 - **Required**: PostgreSQL database, Real-time subscriptions
 
-### **3. Stripe (International Payments)**
-- **Link**: https://stripe.com/
-- **Cost**: 2.9% + 30¢ per transaction
-- **Setup Time**: 30 minutes
-- **Required**: Payment processing, Subscriptions
+### **3. Stripe (Deprecated — use Razorpay)**
+- Stripe references remain for historical context only. This project now uses Razorpay for payments (see section 4).
 
 ### **4. Razorpay (Indian Payments)**
 - **Link**: https://razorpay.com/
@@ -145,8 +146,8 @@ VITE_FIREBASE_APP_ID=your-app-id
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
-# Stripe Configuration (Production)
-VITE_STRIPE_PUBLISHABLE_KEY=pk_live_your-stripe-publishable-key
+# Stripe Configuration (Production) — DEPRECATED
+// Stripe keys are deprecated in this project. Use Razorpay keys instead.
 
 # Razorpay Configuration (Production)
 VITE_RAZORPAY_KEY_ID=rzp_live_your-razorpay-key
@@ -170,9 +171,7 @@ OPENAI_API_KEY=sk-your-actual-openai-key
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 
-# Stripe Configuration
-STRIPE_SECRET_KEY=sk_live_your-stripe-secret-key
-STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+// Stripe keys are deprecated. Use Razorpay configuration.
 
 # Razorpay Configuration
 RAZORPAY_KEY_ID=rzp_live_your-razorpay-key
@@ -211,7 +210,7 @@ CREATE TABLE users (
   credits INTEGER DEFAULT 30,
   minutes_used INTEGER DEFAULT 0,
   subscription_plan TEXT,
-  stripe_customer_id TEXT,
+  razorpay_customer_id TEXT,
   razorpay_customer_id TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -223,7 +222,7 @@ CREATE TABLE transcriptions (
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   filename TEXT NOT NULL,
   original_filename TEXT NOT NULL,
-  s3_key TEXT NOT NULL,
+  storage_key TEXT NOT NULL,
   transcript TEXT NOT NULL,
   language TEXT DEFAULT 'en',
   duration DECIMAL DEFAULT 0,
@@ -236,7 +235,7 @@ CREATE TABLE transcriptions (
 CREATE TABLE subscriptions (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  stripe_subscription_id TEXT UNIQUE,
+  razorpay_subscription_id TEXT UNIQUE,
   razorpay_subscription_id TEXT UNIQUE,
   plan_name TEXT NOT NULL,
   status TEXT NOT NULL,

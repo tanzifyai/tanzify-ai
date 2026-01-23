@@ -1,21 +1,9 @@
 {
-  "name": "tanzify-backend",
+  "name": "tanzify-backend-removed",
   "version": "1.0.0",
-  "description": "Backend API for Tanzify AI transcription service",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "stripe": "^12.0.0",
-    "@supabase/supabase-js": "^2.30.0",
-    "nodemailer": "^6.9.0",
-    "dotenv": "^16.0.0"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.20"
-  }
+  "description": "Backend removed from core repo. Create a separate private backend repo if needed.",
+  "private": true,
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {}
 }
