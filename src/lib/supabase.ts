@@ -15,16 +15,16 @@ const supabaseAnonKey =
 
 // Initialize Supabase safely so the app doesn't crash at render time if
 // environment variables are missing or invalid in production.
-let supabase: any = null;
+let _supabase: any = null;
 let _supabaseInitError: Error | null = null;
 if (!supabaseUrl || !supabaseAnonKey) {
   _supabaseInitError = new Error(
     'Supabase not configured: missing URL or anon key. Set VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY or NEXT_PUBLIC_* equivalents.'
   );
   console.error('[supabase] config error:', _supabaseInitError.message);
-} else {
+  } else {
   try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    _supabase = createClient(supabaseUrl, supabaseAnonKey);
   } catch (e: any) {
     _supabaseInitError = e instanceof Error ? e : new Error(String(e));
     console.error('[supabase] initialization error:', _supabaseInitError.message);
@@ -44,7 +44,9 @@ function makeStub(error: Error) {
 }
 
 export const supabaseInitError = _supabaseInitError;
-export const supabaseClient = supabase ?? makeStub(_supabaseInitError ?? new Error('Supabase not initialized'));
+export const supabaseClient = _supabase ?? makeStub(_supabaseInitError ?? new Error('Supabase not initialized'));
+// Provide a named `supabase` export for existing imports that expect it.
+export const supabase = supabaseClient;
 
 // Database types
 export interface DatabaseUser {
