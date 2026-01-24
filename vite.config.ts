@@ -5,8 +5,12 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Base for GitHub Pages
-  base: '/tanzify-ai/',
+  // Allow both VITE_ and NEXT_PUBLIC_ prefixes to be exposed to client-side import.meta.env
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
+  // Base path: use the GitHub Pages subpath when building for production (adjust as needed).
+  // On Vercel typically the site is served at '/', but if you publish under '/tanzify-ai/'
+  // this ensures asset paths are emitted correctly.
+  base: process.env.NODE_ENV === 'production' ? '/tanzify-ai/' : '/',
   server: {
     host: true,
     port: 5173,
